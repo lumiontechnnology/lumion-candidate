@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Main starburst shape -->
+  <g fill="#0033CC">
+    <!-- Left arrow -->
+    <path d="M95,100 L60,70 L75,100 L60,130 Z" />
+    <!-- Right arrow -->
+    <path d="M105,100 L140,70 L125,100 L140,130 Z" />
+    <!-- Top arrow -->
+    <path d="M100,95 L70,60 L100,75 L130,60 Z" />
+    <!-- Bottom arrow -->
+    <path d="M100,105 L70,140 L100,125 L130,140 Z" />
+    <!-- Top-left arrow -->
+    <path d="M90,90 L55,55 L80,80 L65,65 Z" />
+    <!-- Top-right arrow -->
+    <path d="M110,90 L145,55 L120,80 L135,65 Z" />
+    <!-- Bottom-left arrow -->
+    <path d="M90,110 L55,145 L80,120 L65,135 Z" />
+    <!-- Bottom-right arrow -->
+    <path d="M110,110 L145,145 L120,120 L135,135 Z" />
+    <!-- Stem -->
+    <path d="M100,100 L100,180 L110,180 L110,130 L100,100 Z" />
+  </g>
+</svg>
