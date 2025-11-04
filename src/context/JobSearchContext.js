@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useReducer } from 'react';
-import { jobSearchApi, linkedInApi, indeedApi, emailApplicationService, formSubmissionService } from '../services/api';
+import { jobSearchApi, linkedInApi, indeedApi, glassdoorApi, emailApplicationService, formSubmissionService } from '../services/api';
+import { saveAppliedJob } from '../services/databaseService';
 
 // Create context
 const JobSearchContext = createContext();
@@ -96,10 +97,11 @@ export const JobSearchProvider = ({ children }) => {
       const response = await jobSearchApi.searchAllPlatforms(preferences);
       
       if (response.success) {
-        // Combine LinkedIn and Indeed jobs
+        // Combine LinkedIn, Indeed, and Glassdoor jobs
         const allJobs = [
           ...(response.data.linkedin || []),
-          ...(response.data.indeed || [])
+          ...(response.data.indeed || []),
+          ...(response.data.glassdoor || [])
         ];
         
         dispatch({ 
@@ -139,6 +141,15 @@ export const JobSearchProvider = ({ children }) => {
         } else {
           response = await indeedApi.applyToJob(job.id, applicationData);
         }
+      } else if (job.source === 'Glassdoor') {
+        // Check application method
+        if (job.applicationMethod === 'email') {
+          response = await emailApplicationService.sendApplication(job, applicationData);
+        } else if (job.applicationMethod === 'form') {
+          response = await formSubmissionService.submitApplicationForm(job.applicationUrl, applicationData);
+        } else {
+          response = await glassdoorApi.applyToJob(job.id, applicationData);
+        }
       } else {
         // Default to form submission for other sources
         response = await formSubmissionService.submitApplicationForm(job.applicationUrl, applicationData);
@@ -156,12 +167,23 @@ export const JobSearchProvider = ({ children }) => {
           source: job.source,
           applicationData
         };
-        
+
         dispatch({ 
           type: 'APPLY_TO_JOB_SUCCESS', 
           payload: applicationRecord
         });
-        
+
+        // Persist to Application History for global visibility
+        saveAppliedJob({
+          id: job.id,
+          company: job.company,
+          title: job.title,
+          location: job.location,
+          source: job.source,
+          appliedDate: applicationRecord.appliedDate,
+          status: 'Applied'
+        });
+
         return { success: true, data: applicationRecord };
       } else {
         throw new Error(response.error || 'Failed to apply for job');

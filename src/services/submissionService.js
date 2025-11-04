@@ -37,6 +37,10 @@ const submissionService = {
           // Use Indeed API
           const indeedApi = (await import('./api')).indeedApi;
           response = await indeedApi.applyToJob(job.id, applicationData);
+        } else if (job.source === 'Glassdoor') {
+          // Use Glassdoor API
+          const glassdoorApi = (await import('./api')).glassdoorApi;
+          response = await glassdoorApi.applyToJob(job.id, applicationData);
         } else {
           // Default to form submission for unknown sources
           response = await formSubmissionService.submitApplicationForm(job.applicationUrl, applicationData);

@@ -26,7 +26,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Snackbar
+  Snackbar,
+  Skeleton
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -34,6 +35,8 @@ import WorkIcon from '@mui/icons-material/Work';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import BusinessIcon from '@mui/icons-material/Business';
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
 import lumionLogo from '../assets/lumion-logo.svg';
 
 function JobSearch() {
@@ -52,16 +55,105 @@ function JobSearch() {
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
   const [searchPerformed, setSearchPerformed] = useState(false);
   const [localJobs, setLocalJobs] = useState([]);
+  const [activeSource, setActiveSource] = useState('All');
+  const [savedJobs, setSavedJobs] = useState([]);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+
+  // Normalize local job role data into a realistic job listing shape
+  const mapRoleToJob = (role) => {
+    const companies = [
+      'Lumion Labs',
+      'Pioneer Tech',
+      'Riverstone Analytics',
+      'Northstar Systems',
+      'OrbitWorks',
+      'Summit Digital',
+      'Brightline Software',
+      'Blueleaf Cloud',
+      'Nimbus AI',
+      'Crescent Apps'
+    ];
+    const locations = [
+      'Remote — US',
+      'San Francisco, CA',
+      'New York, NY',
+      'Austin, TX',
+      'Seattle, WA',
+      'Boston, MA',
+      'Chicago, IL',
+      'Denver, CO',
+      'Los Angeles, CA',
+      'Remote — Worldwide'
+    ];
+    const sources = ['LinkedIn', 'Indeed', 'Glassdoor'];
+    const experienceLevels = ['Entry Level', 'Mid Level', 'Senior Level'];
+    const workModes = ['Remote', 'Hybrid', 'On-site'];
+
+    const seed = (role.id + role.title).split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+    const company = companies[seed % companies.length];
+    const location = locations[seed % locations.length];
+    const source = sources[seed % sources.length];
+    const experienceLevel = experienceLevels[seed % experienceLevels.length];
+    const workMode = workModes[seed % workModes.length];
+    const postedDaysAgo = (seed % 14) + 1; // 1–14 days ago
+    const postedDate = new Date(Date.now() - postedDaysAgo * 24 * 60 * 60 * 1000).toISOString();
+
+    const salaryRange = role.averageSalary
+      ? { min: role.averageSalary.min, max: role.averageSalary.max, currency: 'USD' }
+      : { min: 60000, max: 120000, currency: 'USD' };
+
+    return {
+      id: role.id,
+      title: role.title,
+      company,
+      location,
+      description: role.description,
+      experienceLevel,
+      salary: salaryRange,
+      workMode,
+      source,
+      postedDate,
+    };
+  };
 
   // Load job roles from database service on component mount
   useEffect(() => {
     const loadInitialJobs = async () => {
       const roles = await getAllJobRoles();
-      setLocalJobs(roles.slice(0, 10)); // Show first 10 jobs initially
+      // Normalize into job listing shape
+      setLocalJobs(roles.slice(0, 10).map(mapRoleToJob));
     };
     
     loadInitialJobs();
   }, []);
+
+  // Load saved jobs from localStorage on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('lumion_saved_jobs');
+      if (raw) setSavedJobs(JSON.parse(raw));
+    } catch {}
+  }, []);
+
+  const persistSaved = (jobs) => {
+    setSavedJobs(jobs);
+    try {
+      localStorage.setItem('lumion_saved_jobs', JSON.stringify(jobs));
+    } catch {}
+  };
+
+  const isSaved = (job) => savedJobs.some((j) => j.id === job.id);
+  const toggleSaveJob = (job) => {
+    if (isSaved(job)) {
+      const updated = savedJobs.filter((j) => j.id !== job.id);
+      persistSaved(updated);
+      setNotification({ open: true, message: 'Removed from saved jobs', severity: 'info' });
+    } else {
+      const updated = [{ ...job }, ...savedJobs];
+      persistSaved(updated);
+      setNotification({ open: true, message: 'Saved job', severity: 'success' });
+    }
+  };
   
   // Format salary as currency
   const formatSalary = (salary) => {
@@ -103,8 +195,8 @@ function JobSearch() {
     };
     
     // Use database service to search job roles
-    const searchResults = searchJobRoles(filters.keywords, filters.location);
-    setLocalJobs(searchResults);
+    const searchResults = searchJobRoles(filters.keywords || '');
+    setLocalJobs(searchResults.map(mapRoleToJob));
     setSearchPerformed(true);
     
     // Also use the context search for API integration
@@ -126,6 +218,12 @@ function JobSearch() {
   const handleCloseApplyDialog = () => {
     setApplyDialogOpen(false);
   };
+
+  const handleOpenDetails = (job) => {
+    setSelectedJob(job);
+    setDetailsDialogOpen(true);
+  };
+  const handleCloseDetails = () => setDetailsDialogOpen(false);
   
   // Handle job application
   const handleApplyToJob = async () => {
@@ -163,6 +261,20 @@ function JobSearch() {
   // Close notification
   const handleCloseNotification = () => {
     setNotification({ ...notification, open: false });
+  };
+
+  const sourcePool = (localJobs.length > 0 ? localJobs : jobs);
+  const filteredJobs = activeSource === 'Saved'
+    ? savedJobs
+    : sourcePool.filter((job) => activeSource === 'All' || job.source === activeSource);
+
+  const getSourceBadgeSx = (src) => {
+    const styles = {
+      LinkedIn: { bgcolor: '#0A66C2', color: 'white' },
+      Indeed: { bgcolor: '#1346A1', color: 'white' },
+      Glassdoor: { bgcolor: '#0CAA41', color: 'white' },
+    };
+    return { ...(styles[src] || {}), mb: 1 };
   };
   
   return (
@@ -334,6 +446,37 @@ function JobSearch() {
           </Grid>
         </CardContent>
       </Card>
+
+      {/* Source Tabs */}
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            {['All','LinkedIn','Indeed','Glassdoor','Saved'].map((src) => (
+              <Chip
+                key={src}
+                label={src}
+                clickable
+                onClick={() => setActiveSource(src)}
+                sx={{
+                  borderRadius: 2,
+                  ...(src === 'LinkedIn' && { bgcolor: '#0A66C2', color: 'white' }),
+                  ...(src === 'Indeed' && { bgcolor: '#1346A1', color: 'white' }),
+                  ...(src === 'Glassdoor' && { bgcolor: '#0CAA41', color: 'white' }),
+                  ...(src === 'Saved' && {
+                    bgcolor: activeSource === 'Saved' ? 'secondary.main' : 'background.paper',
+                    color: activeSource === 'Saved' ? 'white' : 'text.primary',
+                  }),
+                  ...(src === 'All' && {
+                    bgcolor: activeSource === 'All' ? 'primary.main' : 'background.paper',
+                    color: activeSource === 'All' ? 'white' : 'text.primary',
+                  }),
+                  boxShadow: activeSource === src ? '0 4px 12px rgba(0,0,0,0.15)' : 'none',
+                }}
+              />
+            ))}
+          </Box>
+        </CardContent>
+      </Card>
       
       {/* Search Results */}
       {error && (
@@ -349,14 +492,45 @@ function JobSearch() {
       )}
       
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-          <CircularProgress />
-        </Box>
+        <Grid container spacing={3}>
+          {[1,2,3,4].map((i) => (
+            <Grid item xs={12} key={i}>
+              <Card className="frosted-card">
+                <CardContent>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Skeleton variant="text" width={240} height={28} />
+                      <Skeleton variant="text" width={180} />
+                      <Skeleton variant="text" width={160} />
+                    </Box>
+                    <Box sx={{ textAlign: 'right' }}>
+                      <Skeleton variant="rounded" width={64} height={24} />
+                    </Box>
+                  </Box>
+                  <Box sx={{ mt: 2 }}>
+                    <Skeleton variant="text" width="100%" />
+                    <Skeleton variant="text" width="80%" />
+                    <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                      <Skeleton variant="rounded" width={100} height={28} />
+                      <Skeleton variant="rounded" width={120} height={28} />
+                      <Skeleton variant="rounded" width={90} height={28} />
+                    </Box>
+                  </Box>
+                </CardContent>
+                <Divider />
+                <CardActions>
+                  <Skeleton variant="rounded" width={100} height={32} />
+                  <Skeleton variant="rounded" width={100} height={32} />
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
       ) : (
         <Grid container spacing={3}>
-          {(localJobs.length > 0 ? localJobs : jobs).map((job) => (
+          {filteredJobs.map((job) => (
             <Grid item xs={12} key={job.id}>
-              <Card>
+              <Card className="frosted-card glow-hover">
                 <CardContent>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' }}>
                     <Box>
@@ -375,10 +549,9 @@ function JobSearch() {
                     
                     <Box sx={{ textAlign: 'right' }}>
                       <Chip 
-                        label={job.source} 
-                        color={job.source === 'LinkedIn' ? 'primary' : 'secondary'} 
-                        size="small" 
-                        sx={{ mb: 1 }}
+                        label={job.source}
+                        size="small"
+                        sx={getSourceBadgeSx(job.source)}
                       />
                       <Typography variant="body2" color="text.secondary">
                         Posted {formatRelativeDate(job.postedDate)}
@@ -423,7 +596,10 @@ function JobSearch() {
                   >
                     Apply Now
                   </Button>
-                  <Button size="small">View Details</Button>
+                  <Button size="small" onClick={() => handleOpenDetails(job)}>View Details</Button>
+                  <Button size="small" onClick={() => toggleSaveJob(job)} startIcon={isSaved(job) ? <BookmarkIcon /> : <BookmarkBorderIcon />}>
+                    {isSaved(job) ? 'Saved' : 'Save'}
+                  </Button>
                 </CardActions>
               </Card>
             </Grid>
@@ -466,6 +642,36 @@ function JobSearch() {
           <Button onClick={handleCloseApplyDialog}>Cancel</Button>
           <Button onClick={handleApplyToJob} variant="contained" color="primary">
             Apply
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Details Dialog */}
+      <Dialog open={detailsDialogOpen} onClose={handleCloseDetails} maxWidth="md" fullWidth>
+        <DialogTitle>
+          {selectedJob?.title} — {selectedJob?.company}
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Chip label={selectedJob?.source} sx={getSourceBadgeSx(selectedJob?.source || 'LinkedIn')} />
+            <Typography variant="body2" color="text.secondary">Posted {selectedJob ? formatRelativeDate(selectedJob.postedDate) : ''}</Typography>
+          </Box>
+          <Typography variant="body1" paragraph>
+            {selectedJob?.description}
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Chip icon={<WorkIcon />} label={selectedJob?.experienceLevel} />
+            <Chip icon={<AttachMoneyIcon />} label={selectedJob?.salary ? formatSalary(selectedJob.salary) : 'Not specified'} />
+            <Chip label={selectedJob?.workMode} />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDetails}>Close</Button>
+          <Button onClick={() => toggleSaveJob(selectedJob)} startIcon={selectedJob && isSaved(selectedJob) ? <BookmarkIcon /> : <BookmarkBorderIcon /> }>
+            {selectedJob && isSaved(selectedJob) ? 'Saved' : 'Save'}
+          </Button>
+          <Button onClick={() => { handleCloseDetails(); handleOpenApplyDialog(selectedJob); }} variant="contained" color="primary">
+            Apply Now
           </Button>
         </DialogActions>
       </Dialog>

@@ -105,8 +105,8 @@ export const removeSavedJob = (jobId) => {
 export const saveAppliedJob = (job) => {
   const appliedJobs = getAppliedJobs();
   if (!appliedJobs.some(appliedJob => appliedJob.id === job.id)) {
-    job.appliedDate = new Date().toISOString();
-    job.status = 'Applied';
+    job.appliedDate = job.appliedDate || new Date().toISOString();
+    job.status = job.status || 'Applied';
     appliedJobs.push(job);
     localStorage.setItem(APPLIED_JOBS_KEY, JSON.stringify(appliedJobs));
   }
