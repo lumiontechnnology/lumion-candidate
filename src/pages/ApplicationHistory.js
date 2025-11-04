@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -25,100 +25,10 @@ import SearchIcon from '@mui/icons-material/Search';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import { getAppliedJobs } from '../services/databaseService';
 
-// Mock data for applications
-const mockApplications = [
-  {
-    id: 1,
-    company: 'Tech Innovations Inc.',
-    position: 'Senior Frontend Developer',
-    location: 'New York, NY',
-    appliedDate: '2023-05-15',
-    status: 'Applied',
-    source: 'LinkedIn',
-  },
-  {
-    id: 2,
-    company: 'Global Solutions',
-    position: 'Full Stack Engineer',
-    location: 'Remote',
-    appliedDate: '2023-05-14',
-    status: 'Interview Scheduled',
-    source: 'Indeed',
-  },
-  {
-    id: 3,
-    company: 'Future Tech',
-    position: 'React Developer',
-    location: 'San Francisco, CA',
-    appliedDate: '2023-05-12',
-    status: 'Rejected',
-    source: 'LinkedIn',
-  },
-  {
-    id: 4,
-    company: 'Innovative Systems',
-    position: 'Software Engineer',
-    location: 'Boston, MA',
-    appliedDate: '2023-05-10',
-    status: 'Applied',
-    source: 'Company Website',
-  },
-  {
-    id: 5,
-    company: 'Digital Creations',
-    position: 'UI/UX Designer',
-    location: 'Chicago, IL',
-    appliedDate: '2023-05-08',
-    status: 'Interview Scheduled',
-    source: 'Indeed',
-  },
-  {
-    id: 6,
-    company: 'Tech Solutions',
-    position: 'Backend Developer',
-    location: 'Austin, TX',
-    appliedDate: '2023-05-05',
-    status: 'Offer Received',
-    source: 'LinkedIn',
-  },
-  {
-    id: 7,
-    company: 'Cloud Innovations',
-    position: 'DevOps Engineer',
-    location: 'Seattle, WA',
-    appliedDate: '2023-05-03',
-    status: 'Applied',
-    source: 'Indeed',
-  },
-  {
-    id: 8,
-    company: 'Data Systems',
-    position: 'Data Scientist',
-    location: 'Remote',
-    appliedDate: '2023-05-01',
-    status: 'Rejected',
-    source: 'Company Website',
-  },
-  {
-    id: 9,
-    company: 'Mobile Technologies',
-    position: 'Mobile Developer',
-    location: 'Los Angeles, CA',
-    appliedDate: '2023-04-28',
-    status: 'Applied',
-    source: 'LinkedIn',
-  },
-  {
-    id: 10,
-    company: 'AI Solutions',
-    position: 'Machine Learning Engineer',
-    location: 'San Jose, CA',
-    appliedDate: '2023-04-25',
-    status: 'Interview Scheduled',
-    source: 'Indeed',
-  },
-];
+// Load applications from local storage persistence
+const loadApplied = () => getAppliedJobs();
 
 // Status chip colors
 const statusColors = {
@@ -126,6 +36,7 @@ const statusColors = {
   'Interview Scheduled': 'primary',
   'Offer Received': 'success',
   'Rejected': 'error',
+  'Failed': 'error',
 };
 
 function ApplicationHistory() {
@@ -134,7 +45,15 @@ function ApplicationHistory() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [sourceFilter, setSourceFilter] = useState('All');
-  const [applications, setApplications] = useState(mockApplications);
+  const [applications, setApplications] = useState(loadApplied());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Refresh applied jobs periodically to reflect Run Engine updates
+      setApplications(loadApplied());
+    }, 1500);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -168,7 +87,7 @@ function ApplicationHistory() {
   const filteredApplications = applications.filter((app) => {
     const matchesSearch = 
       app.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (app.title || app.position || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       app.location.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'All' || app.status === statusFilter;
@@ -262,6 +181,8 @@ function ApplicationHistory() {
                 <TableCell>Applied Date</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Source</TableCell>
+                <TableCell>Fail Reason</TableCell>
+                <TableCell>Fix Suggestion</TableCell>
                 <TableCell align="center">Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -271,7 +192,7 @@ function ApplicationHistory() {
                 .map((app) => (
                   <TableRow key={app.id}>
                     <TableCell>{app.company}</TableCell>
-                    <TableCell>{app.position}</TableCell>
+                    <TableCell>{app.title || app.position}</TableCell>
                     <TableCell>{app.location}</TableCell>
                     <TableCell>{app.appliedDate}</TableCell>
                     <TableCell>
@@ -282,6 +203,8 @@ function ApplicationHistory() {
                       />
                     </TableCell>
                     <TableCell>{app.source}</TableCell>
+                    <TableCell>{app.status === 'Failed' ? (app.failureReason || 'Unknown') : '-'}</TableCell>
+                    <TableCell>{app.status === 'Failed' ? (app.fixSuggestion || 'Retry later') : '-'}</TableCell>
                     <TableCell align="center">
                       <IconButton size="small" aria-label="view">
                         <VisibilityIcon fontSize="small" />
@@ -298,7 +221,7 @@ function ApplicationHistory() {
                 ))}
               {filteredApplications.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} align="center">
+                  <TableCell colSpan={9} align="center">
                     No applications found matching your filters.
                   </TableCell>
                 </TableRow>

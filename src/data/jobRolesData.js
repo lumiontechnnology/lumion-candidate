@@ -12,7 +12,11 @@ const jobRoles = [
     title: 'Software Engineer',
     category: 'Technology',
     skills: ['JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'Git', 'AWS'],
-    description: 'Develop and maintain software applications using various programming languages and frameworks.',
+    description: `We’re looking for a Software Engineer to build reliable, scalable services and user-facing features across our product suite. You’ll collaborate with product managers and designers to break down requirements, design robust solutions, and ship clean, maintainable code. Responsibilities include owning end‑to‑end features, writing well‑tested APIs, optimizing performance, and participating in code reviews.
+
+    You enjoy working across the stack, from designing data models and integrating third‑party services to crafting responsive UI components. Experience with modern JavaScript (React/Node), cloud platforms (AWS), and relational databases (SQL) is important. Familiarity with CI/CD, monitoring, and agile practices will help you succeed.
+
+    Qualifications: 3+ years of professional software development experience; strong fundamentals in data structures and algorithms; ability to translate business needs into technical solutions; excellent communication and collaboration skills.`,
     averageSalary: { min: 80000, max: 150000 }
   },
   {
@@ -20,7 +24,11 @@ const jobRoles = [
     title: 'Frontend Developer',
     category: 'Technology',
     skills: ['HTML', 'CSS', 'JavaScript', 'React', 'Vue.js', 'Angular', 'UI/UX'],
-    description: 'Create responsive and interactive user interfaces for web applications.',
+    description: `Join our Frontend team to craft accessible, performant interfaces that delight users. You’ll partner with design to implement pixel‑perfect UIs, build reusable component libraries, and ensure cross‑browser compatibility. Day‑to‑day work includes state management, API integration, and performance tuning.
+
+    You should be comfortable with modern JavaScript frameworks (React preferred), semantic HTML, CSS architecture, and responsive design. Experience with accessibility standards (WCAG), testing tools (Jest/Testing Library), and bundlers is a plus.
+
+    Qualifications: 2–5 years building production web apps; strong eye for detail and UX; knowledge of design systems and component‑driven development; ability to collaborate in an agile environment.`,
     averageSalary: { min: 75000, max: 140000 }
   },
   {
@@ -28,7 +36,11 @@ const jobRoles = [
     title: 'Backend Developer',
     category: 'Technology',
     skills: ['Node.js', 'Python', 'Java', 'C#', 'SQL', 'NoSQL', 'API Design'],
-    description: 'Build server-side logic, databases, and APIs for web applications.',
+    description: `As a Backend Developer, you will design and deliver reliable APIs, data pipelines, and services that power our products. You’ll own system design discussions, implement robust authentication/authorization, and ensure observability with logs, metrics, and tracing.
+
+    Ideal candidates have experience with Node.js or Python, REST/GraphQL APIs, relational and NoSQL databases, and message queues. Comfort with distributed systems concepts (caching, consistency, resiliency) and cloud infrastructure is beneficial.
+
+    Qualifications: 3+ years in backend engineering; strong understanding of API design and database modeling; experience with automated testing and CI/CD; security‑minded approach to development.`,
     averageSalary: { min: 85000, max: 150000 }
   },
   {
@@ -36,7 +48,11 @@ const jobRoles = [
     title: 'Full Stack Developer',
     category: 'Technology',
     skills: ['JavaScript', 'React', 'Node.js', 'MongoDB', 'Express', 'HTML/CSS', 'Git'],
-    description: 'Develop both client and server software for web applications.',
+    description: `We’re hiring a Full Stack Developer to ship end‑to‑end features across our web platform. You’ll work closely with stakeholders to gather requirements, design user flows, implement front‑end views, and build scalable backend services.
+
+    You should be comfortable switching contexts between UI development (React, CSS) and server‑side work (Node.js, Express, MongoDB). Experience with authentication, state management, and deployment pipelines is expected.
+
+    Qualifications: 3–6 years building full‑stack applications; solid understanding of web fundamentals and RESTful APIs; ability to write clean, testable code and contribute to architecture decisions.`,
     averageSalary: { min: 90000, max: 160000 }
   },
   {
@@ -84,7 +100,11 @@ const jobRoles = [
     title: 'UI/UX Designer',
     category: 'Technology',
     skills: ['Figma', 'Adobe XD', 'Sketch', 'User Research', 'Wireframing', 'Prototyping', 'Visual Design'],
-    description: 'Create intuitive and engaging user experiences for digital products.',
+    description: `You will design thoughtful, user‑centered experiences across web and mobile. Responsibilities include conducting user research, facilitating workshops, creating wireframes and high‑fidelity prototypes, and collaborating with engineering to ensure design quality in implementation.
+
+    We value a strong portfolio that demonstrates problem‑solving, attention to detail, and systems thinking. Experience with design systems, accessibility, and data‑informed decision making is preferred.
+
+    Qualifications: 3+ years in product design; proficiency with Figma and prototyping tools; ability to present and articulate design rationale to stakeholders.`,
     averageSalary: { min: 75000, max: 130000 }
   },
   {
@@ -92,7 +112,11 @@ const jobRoles = [
     title: 'Cybersecurity Analyst',
     category: 'Technology',
     skills: ['Network Security', 'Penetration Testing', 'Security Audits', 'SIEM', 'Encryption', 'Risk Assessment'],
-    description: 'Protect systems and data from cyber threats and security breaches.',
+    description: `Help safeguard our infrastructure and data by identifying vulnerabilities, monitoring threats, and implementing security best practices. You’ll conduct risk assessments, coordinate incident response, and collaborate with engineering teams to embed security in our SDLC.
+
+    Experience with SIEM tools, vulnerability scanning, security frameworks (NIST, ISO 27001), and cloud security concepts is valuable. Certifications (e.g., Security+, CEH) are a plus but not required.
+
+    Qualifications: 2–5 years in security operations or engineering; strong analytical mindset; familiarity with encryption, access controls, and secure networking.`,
     averageSalary: { min: 85000, max: 150000 }
   },
   {
@@ -100,7 +124,11 @@ const jobRoles = [
     title: 'Database Administrator',
     category: 'Technology',
     skills: ['SQL', 'Oracle', 'MySQL', 'PostgreSQL', 'MongoDB', 'Database Design', 'Performance Tuning'],
-    description: 'Manage and optimize database systems for organizations.',
+    description: `You’ll be responsible for designing, maintaining, and optimizing our database environments. Day‑to‑day includes performance tuning, backup/restore strategies, schema design, and ensuring high availability.
+
+    The ideal candidate has hands‑on experience with PostgreSQL or MySQL, understands indexing strategies, query optimization, and replication, and is comfortable with infrastructure‑as‑code for provisioning.
+
+    Qualifications: 4+ years in database administration; strong SQL skills; knowledge of security, compliance, and disaster recovery best practices.`,
     averageSalary: { min: 80000, max: 140000 }
   },
   

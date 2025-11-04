@@ -117,6 +117,50 @@ export const indeedApi = {
   }
 };
 
+// Glassdoor API integration
+export const glassdoorApi = {
+  // Search for jobs based on user preferences
+  searchJobs: async (preferences) => {
+    try {
+      console.log('Searching Glassdoor jobs with preferences:', preferences);
+      await new Promise(resolve => setTimeout(resolve, 900));
+      return {
+        success: true,
+        data: generateMockGlassdoorJobs(preferences),
+      };
+    } catch (error) {
+      console.error('Glassdoor API error:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to fetch jobs from Glassdoor',
+      };
+    }
+  },
+
+  // Apply to a job on Glassdoor
+  applyToJob: async (jobId, applicationData) => {
+    try {
+      console.log('Applying to Glassdoor job:', jobId, applicationData);
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      return {
+        success: true,
+        data: {
+          applicationId: 'GD-' + Math.floor(Math.random() * 1000000),
+          jobId,
+          status: 'applied',
+          appliedAt: new Date().toISOString(),
+        }
+      };
+    } catch (error) {
+      console.error('Glassdoor application error:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to apply for job on Glassdoor',
+      };
+    }
+  }
+};
+
 // Email application service
 export const emailApplicationService = {
   // Send application via email
@@ -184,10 +228,11 @@ export const jobSearchApi = {
   // Search for jobs across multiple platforms
   searchAllPlatforms: async (preferences) => {
     try {
-      // Search both LinkedIn and Indeed in parallel
-      const [linkedInResults, indeedResults] = await Promise.all([
+      // Search LinkedIn, Indeed, and Glassdoor in parallel
+      const [linkedInResults, indeedResults, glassdoorResults] = await Promise.all([
         linkedInApi.searchJobs(preferences),
-        indeedApi.searchJobs(preferences)
+        indeedApi.searchJobs(preferences),
+        glassdoorApi.searchJobs(preferences)
       ]);
       
       // Combine and return results
@@ -196,6 +241,7 @@ export const jobSearchApi = {
         data: {
           linkedin: linkedInResults.success ? linkedInResults.data : [],
           indeed: indeedResults.success ? indeedResults.data : [],
+          glassdoor: glassdoorResults.success ? glassdoorResults.data : [],
           timestamp: new Date().toISOString(),
         }
       };
@@ -310,4 +356,52 @@ function generateMockIndeedJobs(preferences) {
   return jobs;
 }
 
+// Helper function to generate mock Glassdoor jobs
+function generateMockGlassdoorJobs(preferences) {
+  const jobCount = Math.floor(Math.random() * 10) + 5; // 5-15 jobs
+  const jobs = [];
+
+  const companies = [
+    'Prime Software', 'NextGen Apps', 'Visionary Labs',
+    'CloudNine Systems', 'DataWorks', 'UI Studio',
+    'Peak Performance Tech', 'Neural Networks Co.', 'DevMotion', 'StackForge'
+  ];
+
+  const locations = preferences.locations || [
+    'New York, NY', 'San Francisco, CA', 'Remote', 'Boston, MA', 
+    'Chicago, IL', 'Austin, TX', 'Seattle, WA', 'Los Angeles, CA'
+  ];
+
+  const jobTitles = preferences.jobTitles || [
+    'Frontend Developer', 'Backend Developer', 'Full Stack Engineer',
+    'Software Engineer', 'UI/UX Designer', 'DevOps Engineer',
+    'Data Scientist', 'Mobile Developer', 'Machine Learning Engineer'
+  ];
+
+  for (let i = 0; i < jobCount; i++) {
+    const randomSalaryMin = Math.floor(Math.random() * 50) + 50; // $50k-$100k
+    const randomSalaryMax = randomSalaryMin + Math.floor(Math.random() * 60) + 20; // $20k-$80k more than min
+
+    jobs.push({
+      id: 'GD-JOB-' + Math.floor(Math.random() * 1000000),
+      title: jobTitles[Math.floor(Math.random() * jobTitles.length)],
+      company: companies[Math.floor(Math.random() * companies.length)],
+      location: locations[Math.floor(Math.random() * locations.length)],
+      description: `Join an innovative team focused on delivering world-class products. Strong fundamentals and ownership mindset required.`,
+      salary: {
+        min: randomSalaryMin * 1000,
+        max: randomSalaryMax * 1000,
+        currency: 'USD'
+      },
+      postedDate: new Date(Date.now() - Math.floor(Math.random() * 21) * 86400000).toISOString(), // 0-21 days ago
+      applicationUrl: 'https://glassdoor.com/jobs/mock-job-' + i,
+      source: 'Glassdoor',
+      workMode: ['Remote', 'Hybrid', 'On-site'][Math.floor(Math.random() * 3)],
+      experienceLevel: ['Entry Level', 'Mid Level', 'Senior Level'][Math.floor(Math.random() * 3)],
+      applicationMethod: ['direct', 'email', 'form'][Math.floor(Math.random() * 3)]
+    });
+  }
+
+  return jobs;
+}
 export default api;

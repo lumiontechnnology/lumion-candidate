@@ -15,6 +15,7 @@ import AutorenewIcon from '@mui/icons-material/Autorenew';
 import SettingsIcon from '@mui/icons-material/Settings';
 import DescriptionIcon from '@mui/icons-material/Description';
 import EmailIcon from '@mui/icons-material/Email';
+import lumionLogo from '../assets/lumion-logo.svg';
 
 const features = [
   {
@@ -45,12 +46,27 @@ function Home() {
       {/* Hero Section */}
       <Box
         sx={{
-          bgcolor: 'primary.main',
+          background: 'linear-gradient(135deg, #0047FF 0%, #60A5FA 100%)',
           color: 'white',
-          pt: 8,
-          pb: 6,
+          pt: 10,
+          pb: 8,
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
+        <Box
+          component="img"
+          src={lumionLogo}
+          alt="Lumion watermark"
+          sx={{
+            position: 'absolute',
+            right: { xs: -40, md: 40 },
+            top: { xs: -40, md: 40 },
+            opacity: 0.05,
+            height: { xs: 160, md: 240 },
+            pointerEvents: 'none',
+          }}
+        />
         <Container maxWidth="lg">
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={6}>
@@ -60,11 +76,11 @@ function Home() {
                 color="inherit"
                 gutterBottom
               >
-                Lumion Career Accelerator
+                Lumion — Intelligent Job Matching
               </Typography>
               <Typography variant="h5" color="inherit" paragraph>
-                Automate your job applications and climb the career ladder faster with Lumion's AI-powered platform.
-                Let us handle the tedious application process while you focus on preparing for interviews.
+                A data-driven HR ecosystem connecting people and opportunities across Africa.
+                Minimal, responsive, and futuristic — with motion that feels alive.
               </Typography>
               <Stack
                 sx={{ pt: 4 }}
@@ -76,8 +92,9 @@ function Home() {
                   component={RouterLink}
                   to="/register"
                   variant="contained"
-                  color="secondary"
+                  color="primary"
                   size="large"
+                  className="glow-hover"
                 >
                   Get Started
                 </Button>
@@ -100,6 +117,8 @@ function Home() {
                   maxHeight: 400,
                   objectFit: 'cover',
                   borderRadius: 2,
+                  boxShadow: '0 12px 32px rgba(0,0,0,0.2)',
+                  animation: 'pulseGlow 2s ease-in-out infinite',
                 }}
                 alt="Career growth illustration"
                 src="https://via.placeholder.com/600x400?text=Career+Growth"
@@ -121,7 +140,7 @@ function Home() {
           How It Works
         </Typography>
         <Typography variant="h5" align="center" color="text.secondary" paragraph>
-          Our platform streamlines your job search and application process
+          Streamline your job search and applications with AI precision
         </Typography>
         <Grid container spacing={4} sx={{ mt: 4 }}>
           {features.map((feature, index) => (
@@ -174,7 +193,7 @@ function Home() {
             Ready to supercharge your job search?
           </Typography>
           <Typography variant="h6" align="center" paragraph>
-            Join thousands of professionals who are saving time and landing better jobs with Career Accelerator.
+            Join professionals saving time and landing better jobs with Lumion.
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
             <Button
@@ -183,7 +202,7 @@ function Home() {
               variant="contained"
               color="primary"
               size="large"
-              sx={{ bgcolor: 'white', color: 'secondary.main' }}
+              className="glow-hover"
             >
               Sign Up Now
             </Button>
