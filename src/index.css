@@ -1,11 +1,13 @@
+/* Import brand fonts via CSS (no HTML <link> required) */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Inter:wght@300;400;500&display=swap');
+
 body {
   margin: 0;
-  font-family: Corbel, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Calibri',
-    'Trebuchet MS', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans',
-    'Droid Sans', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Inter', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #0B1020; /* cosmic dark */
+  background-color: #F9FAFB; /* Snow White background */
+  color: #001B44; /* Deep Navy text */
 }
 
 code {
@@ -31,36 +33,33 @@ code {
   margin-bottom: 2rem;
 }
 
-/* Lumion brand variables */
+/* Lumion Technology brand variables */
 :root {
-  --lumion-blue: #0047FF;
-  --lumion-indigo: #1E3A8A;
-  --lumion-sky: #60A5FA;
-  --lumion-text: #E5E7EB; /* light text for dark mode */
-  --lumion-bg: #0B1020;
-  --cosmic-violet: #7C3AED;
-  --cosmic-cyan: #06B6D4;
-  --cosmic-pink: #EC4899;
+  --lumion-blue: #0033A0;
+  --deep-navy: #001B44;
+  --sky-blue: #4DA6FF;
+  --snow-white: #F9FAFB;
+  --slate-grey: #6B7280;
 }
 
 /* Utilities */
 .lumion-gradient {
-  background: linear-gradient(135deg, var(--lumion-blue) 0%, var(--lumion-sky) 100%);
+  background: linear-gradient(135deg, #0033A0 0%, #4DA6FF 100%);
 }
 
 .frosted-card {
-  background: rgba(13, 18, 34, 0.65);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 8px 28px rgba(0, 71, 255, 0.25), inset 0 0 0 1px rgba(96,165,250,0.2);
-  border-radius: 12px;
-  border: 1px solid rgba(96,165,250,0.18);
+  background: #FFFFFF;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.06);
 }
 
 .glow-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s ease-in-out;
 }
 .glow-hover:hover {
-  box-shadow: 0 14px 36px rgba(0,71,255,0.45), 0 0 24px rgba(236,72,153,0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: scale(1.03);
 }
 
 /* Animations */
@@ -71,26 +70,112 @@ code {
 }
 
 /* Cosmic background (dark neon gradient + subtle starfield) */
-.cosmic-bg {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: radial-gradient(1200px 600px at 20% 10%, rgba(124,58,237,0.15), rgba(124,58,237,0)),
-              radial-gradient(900px 450px at 80% 20%, rgba(6,182,212,0.18), rgba(6,182,212,0)),
-              radial-gradient(1000px 500px at 50% 90%, rgba(236,72,153,0.14), rgba(236,72,153,0)),
-              linear-gradient(180deg, #0B1020 0%, #0E1426 50%, #0B1020 100%);
-}
+.cosmic-bg { display: none; }
 /* Starfield layer */
-.cosmic-bg::before {
-  content: '';
+.cosmic-bg::before { display: none; }
+
+/* Global CSS classes for stricter control */
+.section-hero-bg {
+  background: linear-gradient(180deg, #F3F0FF 0%, #F9FAFB 60%);
+}
+
+.section-muted-bg {
+  background-color: #F7F7FB;
+}
+
+.brand-accent {
+  color: #7C5CFF;
+}
+
+.chip-rounded {
+  border-radius: 12px !important;
+}
+
+.cta-primary {
+  background-color: var(--lumion-blue) !important;
+  color: #FFFFFF !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  font-family: 'Poppins', Arial, sans-serif !important;
+  text-transform: none !important;
+  letter-spacing: 0.02em !important;
+  padding: 8px 14px !important;
+  transition: all 0.25s ease-in-out !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+}
+.cta-primary:hover {
+  background-color: #0047CC !important;
+  transform: scale(1.03);
+}
+
+.cta-outline {
+  border: 1px solid var(--lumion-blue) !important;
+  color: var(--lumion-blue) !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  font-family: 'Poppins', Arial, sans-serif !important;
+  text-transform: none !important;
+  letter-spacing: 0.02em !important;
+  padding: 8px 14px !important;
+  transition: all 0.25s ease-in-out !important;
+}
+.cta-outline:hover {
+  background-color: rgba(77,166,255,0.12) !important;
+  transform: scale(1.03);
+}
+
+.stat-card {
+  border-radius: 12px;
+}
+
+/* Radius utilities and themed footer */
+.rounded-2 {
+  border-radius: 8px;
+}
+
+.rounded-3 {
+  border-radius: 12px;
+}
+
+.footer-dark {
+  background-color: #15131D;
+  color: #EDEDED;
+}
+
+/* Accent overlay and framed image helpers */
+.overlay-blur-accent {
   position: absolute;
   inset: 0;
-  background-image:
-    radial-gradient(2px 2px at 10% 20%, rgba(255,255,255,0.45) 0, rgba(255,255,255,0) 60%),
-    radial-gradient(1.5px 1.5px at 80% 30%, rgba(255,255,255,0.35) 0, rgba(255,255,255,0) 60%),
-    radial-gradient(2px 2px at 40% 75%, rgba(255,255,255,0.5) 0, rgba(255,255,255,0) 60%),
-    radial-gradient(1.5px 1.5px at 30% 50%, rgba(255,255,255,0.4) 0, rgba(255,255,255,0) 60%),
-    radial-gradient(2px 2px at 65% 15%, rgba(255,255,255,0.4) 0, rgba(255,255,255,0) 60%);
-  opacity: 0.6;
+  border-radius: 12px;
+  filter: blur(40px);
+  transform: scale(0.98);
+  opacity: 0.8;
+  mix-blend-mode: multiply;
+  background: radial-gradient(600px 240px at 30% 40%, rgba(124,92,255,0.35) 0%, rgba(124,92,255,0) 60%);
+}
+
+.image-framed {
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  border: 1px solid rgba(124, 92, 255, 0.12);
+  background-color: #fff;
+  border-radius: 12px;
+}
+
+.bg-radial-panel {
+  background: radial-gradient(800px 320px at 30% 30%, rgba(124,92,255,0.15) 0%, rgba(124,92,255,0.0) 70%),
+              linear-gradient(135deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.35) 100%);
+}
+
+/* Navbar link style */
+.link-nav {
+  color: var(--deep-navy) !important;
+  font-weight: 600 !important;
+  font-family: 'Poppins', Arial, sans-serif !important;
+  text-transform: none !important;
+  letter-spacing: 0.01em !important;
+  padding: 8px 10px !important;
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out !important;
+}
+.link-nav:hover {
+  background-color: rgba(0,0,0,0.04) !important;
 }

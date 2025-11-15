@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   Avatar,
   Button,
@@ -12,6 +12,10 @@ import {
   Typography,
   Container,
   Paper,
+  RadioGroup,
+  FormControl,
+  FormLabel,
+  Radio,
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
@@ -20,6 +24,17 @@ function Login() {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState({});
+  const [role, setRole] = useState('candidate');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  React.useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const qpRole = params.get('role');
+    if (qpRole === 'employer' || qpRole === 'candidate') {
+      setRole(qpRole);
+    }
+  }, [location.search]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -47,10 +62,13 @@ function Login() {
         email,
         password,
         rememberMe,
+        role,
       });
       
-      // Redirect to dashboard after successful login
-      // history.push('/dashboard');
+      try {
+        localStorage.setItem('user_role', role);
+      } catch {}
+      navigate(role === 'employer' ? '/employer-dashboard' : '/dashboard');
     }
   };
 
@@ -64,6 +82,13 @@ function Login() {
           Sign in
         </Typography>
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1, width: '100%' }}>
+          <FormControl sx={{ mt: 1 }}>
+            <FormLabel>Login as</FormLabel>
+            <RadioGroup row value={role} onChange={(e) => setRole(e.target.value)}>
+              <FormControlLabel value="candidate" control={<Radio />} label="Candidate" />
+              <FormControlLabel value="employer" control={<Radio />} label="Employer" />
+            </RadioGroup>
+          </FormControl>
           <TextField
             margin="normal"
             required

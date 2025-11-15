@@ -5,7 +5,7 @@ import { Link as RouterLink } from 'react-router-dom';
 function Contact() {
   return (
     <Container maxWidth="md" sx={{ py: 6 }}>
-      <Card className="frosted-card" sx={{ p: 2 }}>
+      <Card className="frosted-card rounded-3" sx={{ p: 2 }}>
         <CardContent>
           <Typography variant="h4" gutterBottom>
             Contact Us
@@ -13,7 +13,7 @@ function Contact() {
           <Typography variant="body1" color="text.secondary" paragraph>
             Have questions or feedback? Drop us a note — we’re listening.
           </Typography>
-          <Button component={RouterLink} to="/" variant="contained" color="primary" className="glow-hover">
+          <Button component={RouterLink} to="/" variant="contained" className="cta-primary">
             Back to Home
           </Button>
         </CardContent>

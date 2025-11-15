@@ -8,14 +8,16 @@ import {
   Typography,
   Card,
   CardContent,
-  CardMedia,
   Stack,
+  Chip,
 } from '@mui/material';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import SettingsIcon from '@mui/icons-material/Settings';
 import DescriptionIcon from '@mui/icons-material/Description';
 import EmailIcon from '@mui/icons-material/Email';
 import lumionLogo from '../assets/lumion-logo.svg';
+import siteContent from '../data/siteContent';
+import JobCard from '../components/jobs/JobCard';
 
 const features = [
   {
@@ -76,11 +78,10 @@ function Home() {
                 color="inherit"
                 gutterBottom
               >
-                Lumion — Intelligent Job Matching
+                {siteContent.hero.title}
               </Typography>
               <Typography variant="h5" color="inherit" paragraph>
-                A data-driven HR ecosystem connecting people and opportunities across Africa.
-                Minimal, responsive, and futuristic — with motion that feels alive.
+                {siteContent.hero.subtitle}
               </Typography>
               <Stack
                 sx={{ pt: 4 }}
@@ -90,38 +91,54 @@ function Home() {
               >
                 <Button
                   component={RouterLink}
-                  to="/register"
+                  to={siteContent.hero.primaryCta.to}
                   variant="contained"
                   color="primary"
                   size="large"
                   className="glow-hover"
                 >
-                  Get Started
+                  {siteContent.hero.primaryCta.label}
                 </Button>
                 <Button
                   component={RouterLink}
-                  to="/login"
+                  to={siteContent.hero.secondaryCta.to}
                   variant="outlined"
                   color="inherit"
                   size="large"
                 >
-                  Login
+                  {siteContent.hero.secondaryCta.label}
                 </Button>
+              </Stack>
+              <Stack direction="row" spacing={1.5} sx={{ mt: 4, flexWrap: 'wrap' }}>
+                {siteContent.categories.map((cat) => (
+                  <Box
+                    key={cat}
+                    sx={{
+                      bgcolor: 'rgba(255,255,255,0.15)',
+                      color: 'white',
+                      px: 1.5,
+                      py: 0.75,
+                      borderRadius: 999,
+                      fontFamily: 'Poppins, Arial, sans-serif',
+                      fontWeight: 600,
+                      fontSize: '0.85rem',
+                    }}
+                  >
+                    {cat}
+                  </Box>
+                ))}
               </Stack>
             </Grid>
             <Grid item xs={12} md={6}>
               <Box
-                component="img"
                 sx={{
                   width: '100%',
-                  maxHeight: 400,
-                  objectFit: 'cover',
+                  height: 340,
                   borderRadius: 2,
                   boxShadow: '0 12px 32px rgba(0,0,0,0.2)',
-                  animation: 'pulseGlow 2s ease-in-out infinite',
+                  background:
+                    'radial-gradient(1200px 520px at 20% 20%, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.0) 70%), linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)',
                 }}
-                alt="Career growth illustration"
-                src="https://via.placeholder.com/600x400?text=Career+Growth"
               />
             </Grid>
           </Grid>
@@ -180,7 +197,59 @@ function Home() {
         </Grid>
       </Container>
 
-      {/* Call to Action */}
+      {/* Featured Jobs */}
+      {/* Featured Companies */}
+      <Container sx={{ py: 6 }} maxWidth="lg">
+        <Typography component="h2" variant="h5" align="center" color="text.secondary" gutterBottom>
+          Featured Companies
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
+          {siteContent.companies?.map((name) => (
+            <Chip key={name} label={name} sx={{ borderRadius: 2 }} />
+          ))}
+        </Box>
+      </Container>
+
+      <Container sx={{ py: 8 }} maxWidth="lg">
+        <Typography component="h2" variant="h3" align="center" color="text.primary" gutterBottom>
+          Featured Jobs
+        </Typography>
+        <Typography variant="h6" align="center" color="text.secondary" paragraph>
+          Curated roles from leading studios and startups
+        </Typography>
+        <Grid container spacing={3} sx={{ mt: 4 }}>
+          {siteContent.featuredJobs.map((job) => (
+            <Grid item key={`${job.title}-${job.company}`} xs={12} sm={6} md={3}>
+              <JobCard {...job} />
+            </Grid>
+          ))}
+        </Grid>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Button component={RouterLink} to="/job-search" variant="outlined" size="large">
+            Browse All Jobs
+          </Button>
+        </Box>
+      </Container>
+
+      {/* Testimonials */}
+      <Container sx={{ py: 8 }} maxWidth="lg">
+        <Grid container spacing={3}>
+          {siteContent.homeTestimonials.map((t) => (
+            <Grid item xs={12} md={6} key={t.author}>
+              <Card className="frosted-card" sx={{ p: 3 }}>
+                <Typography variant="h6" sx={{ fontStyle: 'italic' }}>
+                  “{t.quote}”
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  — {t.author}
+                </Typography>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+
+      {/* Newsletter CTA */}
       <Box
         sx={{
           bgcolor: 'secondary.main',
@@ -190,21 +259,14 @@ function Home() {
       >
         <Container maxWidth="md">
           <Typography variant="h4" align="center" gutterBottom>
-            Ready to supercharge your job search?
+            {siteContent.newsletter.title}
           </Typography>
           <Typography variant="h6" align="center" paragraph>
-            Join professionals saving time and landing better jobs with Lumion.
+            {siteContent.newsletter.subtitle}
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-            <Button
-              component={RouterLink}
-              to="/register"
-              variant="contained"
-              color="primary"
-              size="large"
-              className="glow-hover"
-            >
-              Sign Up Now
+            <Button variant="contained" color="primary" size="large" className="glow-hover">
+              {siteContent.newsletter.ctaLabel}
             </Button>
           </Box>
         </Container>

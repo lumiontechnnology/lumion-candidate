@@ -4,7 +4,7 @@ import { Container, Typography, Card, CardContent } from '@mui/material';
 function Terms() {
   return (
     <Container maxWidth="md" sx={{ py: 6 }}>
-      <Card className="frosted-card" sx={{ p: 2 }}>
+      <Card className="frosted-card rounded-3" sx={{ p: 2 }}>
         <CardContent>
           <Typography variant="h4" gutterBottom>
             Terms of Service

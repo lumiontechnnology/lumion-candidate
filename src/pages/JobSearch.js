@@ -37,7 +37,6 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import BusinessIcon from '@mui/icons-material/Business';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
-import lumionLogo from '../assets/lumion-logo.svg';
 
 function JobSearch() {
   const { 
@@ -108,6 +107,7 @@ function JobSearch() {
       company,
       location,
       description: role.description,
+      skills: role.skills,
       experienceLevel,
       salary: salaryRange,
       workMode,
@@ -656,14 +656,41 @@ function JobSearch() {
             <Chip label={selectedJob?.source} sx={getSourceBadgeSx(selectedJob?.source || 'LinkedIn')} />
             <Typography variant="body2" color="text.secondary">Posted {selectedJob ? formatRelativeDate(selectedJob.postedDate) : ''}</Typography>
           </Box>
-          <Typography variant="body1" paragraph>
-            {selectedJob?.description}
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          {/* Overview chips */}
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
             <Chip icon={<WorkIcon />} label={selectedJob?.experienceLevel} />
             <Chip icon={<AttachMoneyIcon />} label={selectedJob?.salary ? formatSalary(selectedJob.salary) : 'Not specified'} />
             <Chip label={selectedJob?.workMode} />
+            <Chip label={selectedJob?.location} />
           </Box>
+
+          {/* Full Description */}
+          <Typography variant="h6" sx={{ mt: 1 }}>About the role</Typography>
+          <Typography variant="body1" paragraph>
+            {selectedJob?.description}
+          </Typography>
+
+          {/* Work Model */}
+          <Typography variant="h6" sx={{ mt: 2 }}>Work Model</Typography>
+          <Typography variant="body2" color="text.secondary" paragraph>
+            This role is {String(selectedJob?.workMode || '').toLowerCase()}. Specific scheduling and office expectations may vary by team and location.
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
+            <Chip label={selectedJob?.workMode} color="primary" variant="outlined" />
+            <Chip label={selectedJob?.location} variant="outlined" />
+          </Box>
+
+          {/* Required Skills */}
+          {selectedJob?.skills?.length ? (
+            <>
+              <Typography variant="h6" sx={{ mt: 2 }}>Required skills</Typography>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                {selectedJob.skills.map((skill) => (
+                  <Chip key={skill} label={skill} variant="outlined" />
+                ))}
+              </Box>
+            </>
+          ) : null}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDetails}>Close</Button>

@@ -1,68 +1,50 @@
 import React from 'react';
-import { Box, Container, Typography, Link, Grid } from '@mui/material';
+import { Box, Container, Typography, Link, Grid, Stack, IconButton, Divider } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
+import FacebookIcon from '@mui/icons-material/Facebook';
+import InstagramIcon from '@mui/icons-material/Instagram';
+import TwitterIcon from '@mui/icons-material/Twitter';
+import PinterestIcon from '@mui/icons-material/Pinterest';
+import siteContent from '../../data/siteContent';
 
 function Footer() {
+  const data = siteContent.footerDark;
   return (
-    <Box
-      component="footer"
-      sx={{
-        py: 3,
-        px: 2,
-        mt: 'auto',
-        backgroundColor: (theme) => theme.palette.grey[900],
-        color: 'white',
-      }}
-    >
+    <Box component="footer" className="footer-dark rounded-3" sx={{ py: 8, mt: 10 }}>
       <Container maxWidth="lg">
-        <Grid container spacing={4}>
-          <Grid item xs={12} sm={4}>
-            <Typography variant="h6" gutterBottom>
-              Career Accelerator
-            </Typography>
-            <Typography variant="body2">
-              Automating your job search and application process to help you move up the career ladder faster.
-            </Typography>
+        <Typography variant="h3" sx={{ fontWeight: 800 }}>
+          {data.title} <span className="brand-accent">↗</span>
+        </Typography>
+
+        <Grid container spacing={4} sx={{ mt: 2 }}>
+          <Grid item xs={12} md={4}>
+            <Typography variant="h5" sx={{ fontWeight: 800 }}>{data.brand.name}</Typography>
+            <Typography variant="body2" sx={{ mt: 1, color: 'rgba(255,255,255,0.8)' }}>{data.brand.description}</Typography>
+            <Stack direction="row" spacing={1.5} sx={{ mt: 2 }}>
+              <IconButton href="#" sx={{ bgcolor: '#7C5CFF', color: '#fff', '&:hover': { bgcolor: '#6A4BFF' } }} size="small"><FacebookIcon fontSize="small" /></IconButton>
+              <IconButton href="#" sx={{ bgcolor: '#7C5CFF', color: '#fff', '&:hover': { bgcolor: '#6A4BFF' } }} size="small"><InstagramIcon fontSize="small" /></IconButton>
+              <IconButton href="#" sx={{ bgcolor: '#7C5CFF', color: '#fff', '&:hover': { bgcolor: '#6A4BFF' } }} size="small"><TwitterIcon fontSize="small" /></IconButton>
+              <IconButton href="#" sx={{ bgcolor: '#7C5CFF', color: '#fff', '&:hover': { bgcolor: '#6A4BFF' } }} size="small"><PinterestIcon fontSize="small" /></IconButton>
+            </Stack>
           </Grid>
-          <Grid item xs={12} sm={4}>
-            <Typography variant="h6" gutterBottom>
-              Quick Links
-            </Typography>
-            <Link component={RouterLink} to="/" color="inherit" display="block" sx={{ mb: 1 }}>
-              Home
-            </Link>
-            <Link component={RouterLink} to="/dashboard" color="inherit" display="block" sx={{ mb: 1 }}>
-              Dashboard
-            </Link>
-            <Link component={RouterLink} to="/preferences" color="inherit" display="block" sx={{ mb: 1 }}>
-              Job Preferences
-            </Link>
-            <Link component={RouterLink} to="/resume-builder" color="inherit" display="block">
-              Resume Builder
-            </Link>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Typography variant="h6" gutterBottom>
-              Legal
-            </Typography>
-            <Link component={RouterLink} to="/privacy" color="inherit" display="block" sx={{ mb: 1 }}>
-              Privacy Policy
-            </Link>
-            <Link component={RouterLink} to="/terms" color="inherit" display="block" sx={{ mb: 1 }}>
-              Terms of Service
-            </Link>
-            <Link component={RouterLink} to="/contact" color="inherit" display="block">
-              Contact Us
-            </Link>
-          </Grid>
+          {data.columns.map((col) => (
+            <Grid key={col.title} item xs={12} md={2}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>{col.title}</Typography>
+              <Stack sx={{ mt: 1 }}>
+                {col.links.map((lnk) => (
+                  <Link key={lnk.label} component={RouterLink} to={lnk.to} sx={{ my: 0.5, color: '#EDEDED' }}>
+                    {lnk.label}
+                  </Link>
+                ))}
+              </Stack>
+            </Grid>
+          ))}
         </Grid>
-        <Box mt={3}>
-          <Typography variant="body2" align="center">
-            {'© '}
-            {new Date().getFullYear()}
-            {' Career Accelerator. All rights reserved.'}
-          </Typography>
-        </Box>
+
+        <Divider sx={{ my: 4, borderColor: 'rgba(255,255,255,0.1)' }} />
+        <Typography variant="body2" align="center" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+          {data.copyright}
+        </Typography>
       </Container>
     </Box>
   );
