@@ -1,5 +1,8 @@
 import axios from 'axios';
 
+// Backend API base (for server-powered marketplace endpoints)
+const BACKEND_API = process.env.REACT_APP_BACKEND_URL || 'http://localhost:4000/api';
+
 // Base API configuration
 const api = axios.create({
   timeout: 30000, // 30 seconds timeout
@@ -405,3 +408,31 @@ function generateMockGlassdoorJobs(preferences) {
   return jobs;
 }
 export default api;
+
+// Marketplace endpoints (jobs & proposals via backend server)
+export const marketplaceApi = {
+  fetchJobs: async (skillsCsv) => {
+    const url = `${BACKEND_API}/jobs${skillsCsv ? `?skills=${encodeURIComponent(skillsCsv)}` : ''}`;
+    const { data } = await axios.get(url);
+    return data.jobs || [];
+  },
+  createJob: async ({ title, description, budget, timeline, skills = [], client }) => {
+    const url = `${BACKEND_API}/jobs`;
+    const { data } = await axios.post(url, { title, description, budget, timeline, skills, client });
+    return data.job;
+  },
+  listProposals: async ({ freelancerId, jobId } = {}) => {
+    const params = new URLSearchParams();
+    if (freelancerId) params.set('freelancerId', freelancerId);
+    if (jobId) params.set('jobId', jobId);
+    const qs = params.toString();
+    const url = `${BACKEND_API}/proposals${qs ? `?${qs}` : ''}`;
+    const { data } = await axios.get(url);
+    return data.proposals || [];
+  },
+  submitProposal: async ({ jobId, freelancerId, proposalText, samples = [], introType = null }) => {
+    const url = `${BACKEND_API}/proposals`;
+    const { data } = await axios.post(url, { jobId, freelancerId, proposalText, samples, introType });
+    return data.proposal;
+  },
+};

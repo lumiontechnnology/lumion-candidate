@@ -24,6 +24,8 @@ import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import Contact from './pages/Contact';
 import EmployerDashboard from './pages/EmployerDashboard';
+import FreelancerDashboard from './pages/FreelancerDashboard';
+import PostJob from './pages/PostJob';
 
 // Context Providers
 import { JobSearchProvider } from './context/JobSearchContext';
@@ -164,6 +166,8 @@ function App() {
           <Route path="/" element={<HomeLanding />} />
           <Route path="/dashboard" element={<UserDashboard />} />
           <Route path="/employer-dashboard" element={<EmployerDashboard />} />
+          <Route path="/post-job" element={<PostJob />} />
+          <Route path="/freelancer" element={<FreelancerDashboard />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/preferences" element={<JobPreferences />} />

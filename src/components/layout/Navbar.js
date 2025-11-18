@@ -183,6 +183,16 @@ function Navbar({ onToggleTheme, mode }) {
               </Button>
               <Button
                 component={RouterLink}
+                to="/post-job"
+                variant="outlined"
+                color="primary"
+                className="cta-outline"
+                sx={{ mr: 1 }}
+              >
+                Post a Job
+              </Button>
+              <Button
+                component={RouterLink}
                 to="/login"
                 className="link-nav"
                 sx={{ mr: 1 }}
