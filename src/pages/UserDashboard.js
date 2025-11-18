@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Container,
@@ -21,9 +21,13 @@ import {
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PendingIcon from '@mui/icons-material/Pending';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
-import lumionLogo from '../assets/lumion-logo.svg';
 import useNotifications from '../hooks/useNotifications';
 import useRecommendedVacancies from '../hooks/useRecommendedVacancies';
+import { getApplicationStatistics, fetchApplicationStatistics, fetchSavedJobs } from '../services/databaseService';
+import ApplicationsTrendChart from '../components/dashboard/ApplicationsTrendChart';
+import StatusDistributionChart from '../components/dashboard/StatusDistributionChart';
+import SourceBreakdownChart from '../components/dashboard/SourceBreakdownChart';
+ 
 
 // Data is provided by hooks; local mock arrays removed
 
@@ -31,6 +35,27 @@ export default function UserDashboard() {
   const location = useLocation();
   const { items: notifications, loading: notifLoading } = useNotifications();
   const { items: vacancies, loading: vacLoading } = useRecommendedVacancies(5);
+  const [stats, setStats] = useState(getApplicationStatistics());
+  const [savedCount, setSavedCount] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const s = await fetchApplicationStatistics();
+        if (!cancelled) setStats(s);
+      } catch {}
+      try {
+        const saved = await fetchSavedJobs();
+        if (!cancelled) setSavedCount((saved || []).length);
+      } catch {}
+    };
+    load();
+    return () => { cancelled = true; };
+  }, []);
+  const interviewCount = Object.entries(stats?.byStatus || {})
+    .filter(([key]) => key.toLowerCase().includes('interview'))
+    .reduce((acc, [, val]) => acc + (val || 0), 0);
   const tabs = [
     { label: 'Dashboard', to: '/dashboard' },
     { label: 'Vacancies', to: '/job-search' },
@@ -44,9 +69,11 @@ export default function UserDashboard() {
   );
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Dashboard
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography variant="h4" gutterBottom>
+          Dashboard
+        </Typography>
+      </Box>
 
       {/* Top Tabs - visual only */}
       <Paper className="rounded-3" sx={{ p: 1, mb: 3 }}>
@@ -60,71 +87,34 @@ export default function UserDashboard() {
       <Grid container spacing={3}>
         {/* Left Column */}
         <Grid item xs={12} md={8}>
-          {/* Career Map */}
-          <Paper
-            className="rounded-3"
-            sx={{ p: 2.5, mb: 3, bgcolor: '#10151A', color: 'white' }}
-          >
+          <Paper className="rounded-3" sx={{ p: 2.5, mb: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6">Career Map</Typography>
-              <Chip label="Applied" color="success" size="small" />
+              <Typography variant="h6">Quick Stats</Typography>
+              <Chip label={`Total: ${stats?.total || 0}`} color="primary" size="small" />
             </Box>
-            <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-              <Chip label="Resume" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white' }} />
-              <Chip label="LinkedIn" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white' }} />
-              <Chip label="Indeed" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white' }} />
-            </Stack>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 4 }}>
-              <img src={lumionLogo} alt="Lumion" style={{ width: 120, opacity: 0.9 }} />
-            </Box>
-            <Typography variant="caption" sx={{ opacity: 0.7 }}>
-              Loading...
-            </Typography>
-          </Paper>
-
-          {/* Progress of the Goal */}
-          <Paper className="rounded-3" sx={{ p: 2.5, mb: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Box>
-                <Typography variant="h6">Progress of the Goal</Typography>
-                <Typography variant="caption" color="text.secondary">Loading...</Typography>
-              </Box>
-              <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-                <CircularProgress variant="determinate" value={75} size={80} />
-                <Box
-                  sx={{
-                    top: 0,
-                    left: 0,
-                    bottom: 0,
-                    right: 0,
-                    position: 'absolute',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Typography variant="h6">75%</Typography>
-                </Box>
-              </Box>
-            </Box>
-          </Paper>
-
-          {/* Progress Days */}
-          <Paper className="rounded-3" sx={{ p: 2.5, mb: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Progress
-            </Typography>
-            <Stack direction="row" spacing={1}>
-              {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map((d) => (
-                <Chip
-                  key={d}
-                  label={d}
-                  color={d === 'Sat' ? 'primary' : 'default'}
-                  variant={d === 'Sat' ? 'filled' : 'outlined'}
-                />
-              ))}
+            <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+              <Chip label={`Saved: ${savedCount}`} variant="outlined" />
+              <Chip label={`Interviews: ${interviewCount}`} variant="outlined" color={interviewCount ? 'success' : 'default'} />
+              <Chip label={`Awaiting: ${(stats?.byStatus?.Applied || 0) + (stats?.byStatus?.Submitted || 0)}`} variant="outlined" />
             </Stack>
           </Paper>
+
+          <Paper className="rounded-3" sx={{ p: 2.5, mb: 3 }}>
+            <ApplicationsTrendChart byDay={stats?.byDay} />
+          </Paper>
+
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <Paper className="rounded-3" sx={{ p: 2.5, mb: 3 }}>
+                <SourceBreakdownChart bySource={stats?.bySource} />
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Paper className="rounded-3" sx={{ p: 2.5, mb: 3 }}>
+                <StatusDistributionChart byStatus={stats?.byStatus} />
+              </Paper>
+            </Grid>
+          </Grid>
 
           {/* Today's Tasks */}
           <Paper className="rounded-3" sx={{ p: 2.5 }}>

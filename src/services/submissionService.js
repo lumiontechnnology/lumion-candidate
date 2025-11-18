@@ -7,11 +7,20 @@ const submissionService = {
     try {
       console.log('Submitting application for job:', job.id);
       
+      // Normalize optimized materials input (can be boolean or object)
+      let materials = optimizedMaterials;
+      if (!materials) {
+        materials = { resume: userData.resume, coverLetter: userData.coverLetter };
+      } else if (materials === true) {
+        // If flag is true, generate optimized materials
+        materials = await simulateOptimization(job, userData);
+      }
+
       // Prepare application data
       const applicationData = {
         ...userData,
-        resume: optimizedMaterials.resume || userData.resume,
-        coverLetter: optimizedMaterials.coverLetter || userData.coverLetter,
+        resume: (materials && materials.resume) ? materials.resume : userData.resume,
+        coverLetter: (materials && materials.coverLetter) ? materials.coverLetter : userData.coverLetter,
         applicationDate: new Date().toISOString(),
       };
       

@@ -1,0 +1,4 @@
+[
+  { "id": "s1", "role": "Frontend Engineer", "company": "Acme", "location": "Remote" },
+  { "id": "s2", "role": "Backend Developer", "company": "Globex", "location": "NYC" }
+]

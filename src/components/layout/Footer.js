@@ -27,12 +27,12 @@ function Footer() {
               <IconButton href="#" sx={{ bgcolor: '#7C5CFF', color: '#fff', '&:hover': { bgcolor: '#6A4BFF' } }} size="small"><PinterestIcon fontSize="small" /></IconButton>
             </Stack>
           </Grid>
-          {data.columns.map((col) => (
-            <Grid key={col.title} item xs={12} md={2}>
+          {data.columns.map((col, idx) => (
+            <Grid key={`${col.title}-${idx}`} item xs={12} md={2}>
               <Typography variant="h6" sx={{ fontWeight: 700 }}>{col.title}</Typography>
               <Stack sx={{ mt: 1 }}>
-                {col.links.map((lnk) => (
-                  <Link key={lnk.label} component={RouterLink} to={lnk.to} sx={{ my: 0.5, color: '#EDEDED' }}>
+                {col.links.map((lnk, linkIdx) => (
+                  <Link key={`${lnk.label}-${linkIdx}`} component={RouterLink} to={lnk.to} sx={{ my: 0.5, color: '#EDEDED' }}>
                     {lnk.label}
                   </Link>
                 ))}

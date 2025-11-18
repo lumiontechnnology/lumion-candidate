@@ -8,6 +8,9 @@
 import jobRoles, { getJobRolesByCategory, getJobCategories, searchJobRoles } from '../data/jobRolesData';
 import userProfiles, { getUserProfilesByTitle, getUserProfilesByLocation, searchUserProfiles } from '../data/userProfilesData';
 
+// Backend API base (for local dev, can be overridden via env)
+const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:4000';
+
 // Local storage keys
 const SAVED_JOBS_KEY = 'lumion_saved_jobs';
 const APPLIED_JOBS_KEY = 'lumion_applied_jobs';
@@ -168,6 +171,111 @@ export const getApplicationStatistics = () => {
   };
 };
 
+// Async fetchers from backend with graceful fallback to local computations
+export const fetchApplicationStatistics = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/api/stats`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (e) {
+    return getApplicationStatistics();
+  }
+};
+
+// Applied jobs backend integration with graceful fallbacks
+export const fetchAppliedJobs = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/api/applications`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    return Array.isArray(json.items) ? json.items : [];
+  } catch (e) {
+    return getAppliedJobs();
+  }
+};
+
+export const saveAppliedJobToBackend = async (job) => {
+  try {
+    const res = await fetch(`${API_BASE}/api/applications`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(job),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    // Return current list for consistency with local helper
+    return Array.isArray(json.items) ? json.items : getAppliedJobs();
+  } catch (e) {
+    return saveAppliedJob(job);
+  }
+};
+
+export const updateAppliedJobStatusBackend = async (id, payload = {}) => {
+  try {
+    const res = await fetch(`${API_BASE}/api/applications/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    return Array.isArray(json.items) ? json.items : getAppliedJobs();
+  } catch (e) {
+    const status = payload.status ?? 'Applied';
+    return updateAppliedJobStatus(id, status);
+  }
+};
+
+export const fetchSavedJobs = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/api/jobs/saved`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    return Array.isArray(json.items) ? json.items : [];
+  } catch (e) {
+    return getSavedJobs();
+  }
+};
+
+// Save a job to backend, fallback to local storage
+export const saveJobToBackend = async (job) => {
+  try {
+    const res = await fetch(`${API_BASE}/api/jobs/saved`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(job),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    return Array.isArray(json.items) ? json.items : [];
+  } catch (e) {
+    return saveJob(job);
+  }
+};
+
+// Remove a saved job from backend, fallback to local storage
+export const removeSavedJobFromBackend = async (jobId) => {
+  try {
+    const res = await fetch(`${API_BASE}/api/jobs/saved/${jobId}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    return Array.isArray(json.items) ? json.items : [];
+  } catch (e) {
+    return removeSavedJob(jobId);
+  }
+};
+
+export const fetchRecommendedVacancies = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/api/jobs/recommended`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    return Array.isArray(json.items) ? json.items : [];
+  } catch (e) {
+    return [];
+  }
+};
+
 /**
  * Job matching and recommendations
  */
@@ -252,6 +360,14 @@ export default {
   updateAppliedJobStatus,
   
   getApplicationStatistics,
+  fetchApplicationStatistics,
+  fetchAppliedJobs,
+  saveAppliedJobToBackend,
+  updateAppliedJobStatusBackend,
+  fetchSavedJobs,
+  saveJobToBackend,
+  removeSavedJobFromBackend,
+  fetchRecommendedVacancies,
   getJobMatchScore,
   getRecommendedJobs
 };

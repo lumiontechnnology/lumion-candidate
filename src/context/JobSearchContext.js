@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useReducer } from 'react';
 import { jobSearchApi, linkedInApi, indeedApi, glassdoorApi, emailApplicationService, formSubmissionService } from '../services/api';
-import { saveAppliedJob } from '../services/databaseService';
+import { saveAppliedJob, saveAppliedJobToBackend } from '../services/databaseService';
 
 // Create context
 const JobSearchContext = createContext();
@@ -173,16 +173,31 @@ export const JobSearchProvider = ({ children }) => {
           payload: applicationRecord
         });
 
-        // Persist to Application History for global visibility
-        saveAppliedJob({
-          id: job.id,
-          company: job.company,
-          title: job.title,
-          location: job.location,
-          source: job.source,
-          appliedDate: applicationRecord.appliedDate,
-          status: 'Applied'
-        });
+        // Persist to backend with fallback to local storage
+        try {
+          await saveAppliedJobToBackend({
+            id: job.id,
+            jobId: job.id,
+            company: job.company,
+            title: job.title,
+            position: job.title,
+            location: job.location,
+            source: job.source,
+            appliedDate: applicationRecord.appliedDate,
+            status: 'Applied'
+          });
+        } catch (e) {
+          // Fallback handled by service, but keep local as ultimate backup
+          saveAppliedJob({
+            id: job.id,
+            company: job.company,
+            title: job.title,
+            location: job.location,
+            source: job.source,
+            appliedDate: applicationRecord.appliedDate,
+            status: 'Applied'
+          });
+        }
 
         return { success: true, data: applicationRecord };
       } else {

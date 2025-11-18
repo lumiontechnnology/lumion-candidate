@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useJobSearch } from '../context/JobSearchContext';
-import { getAllJobRoles } from '../services/databaseService';
+import { getAllJobRoles, fetchRecommendedVacancies, fetchSavedJobs, saveJobToBackend, removeSavedJobFromBackend } from '../services/databaseService';
 import { searchJobRoles } from '../data/jobRolesData';
 import {
   Box,
@@ -54,6 +54,9 @@ function JobSearch() {
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
   const [searchPerformed, setSearchPerformed] = useState(false);
   const [localJobs, setLocalJobs] = useState([]);
+  const [recommendedJobs, setRecommendedJobs] = useState([]);
+  const [recLoading, setRecLoading] = useState(true);
+  const [recError, setRecError] = useState(null);
   const [activeSource, setActiveSource] = useState('All');
   const [savedJobs, setSavedJobs] = useState([]);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
@@ -127,12 +130,59 @@ function JobSearch() {
     loadInitialJobs();
   }, []);
 
-  // Load saved jobs from localStorage on mount
+  // Load recommended vacancies from backend on mount
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem('lumion_saved_jobs');
-      if (raw) setSavedJobs(JSON.parse(raw));
-    } catch {}
+    let cancelled = false;
+    const mapVacancyToJob = (vac) => ({
+      id: vac.id,
+      title: vac.role,
+      company: vac.company,
+      location: vac.location,
+      description: 'Recommended vacancy from backend.',
+      skills: [],
+      experienceLevel: 'Mid Level',
+      salary: { min: 60000, max: 120000, currency: 'USD' },
+      workMode: 'Remote',
+      source: 'Backend',
+      postedDate: new Date().toISOString(),
+      matchScore: vac.matchScore ?? 0,
+    });
+    const load = async () => {
+      setRecLoading(true);
+      setRecError(null);
+      try {
+        const rec = await fetchRecommendedVacancies();
+        if (!cancelled) {
+          setRecommendedJobs((rec || []).map(mapVacancyToJob));
+          setRecLoading(false);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setRecError(e?.message || 'Failed to load recommended vacancies');
+          setRecLoading(false);
+        }
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Load saved jobs from backend (fallback to local storage)
+  useEffect(() => {
+    let cancelled = false;
+    const loadSaved = async () => {
+      try {
+        const items = await fetchSavedJobs();
+        if (!cancelled) setSavedJobs(items || []);
+      } catch {
+        try {
+          const raw = localStorage.getItem('lumion_saved_jobs');
+          if (raw && !cancelled) setSavedJobs(JSON.parse(raw));
+        } catch {}
+      }
+    };
+    loadSaved();
+    return () => { cancelled = true; };
   }, []);
 
   const persistSaved = (jobs) => {
@@ -143,15 +193,27 @@ function JobSearch() {
   };
 
   const isSaved = (job) => savedJobs.some((j) => j.id === job.id);
-  const toggleSaveJob = (job) => {
+  const toggleSaveJob = async (job) => {
     if (isSaved(job)) {
-      const updated = savedJobs.filter((j) => j.id !== job.id);
-      persistSaved(updated);
-      setNotification({ open: true, message: 'Removed from saved jobs', severity: 'info' });
+      try {
+        const updated = await removeSavedJobFromBackend(job.id);
+        persistSaved(updated);
+        setNotification({ open: true, message: 'Removed from saved jobs', severity: 'info' });
+      } catch {
+        const updated = savedJobs.filter((j) => j.id !== job.id);
+        persistSaved(updated);
+        setNotification({ open: true, message: 'Removed locally (backend unavailable)', severity: 'warning' });
+      }
     } else {
-      const updated = [{ ...job }, ...savedJobs];
-      persistSaved(updated);
-      setNotification({ open: true, message: 'Saved job', severity: 'success' });
+      try {
+        const updated = await saveJobToBackend(job);
+        persistSaved(updated);
+        setNotification({ open: true, message: 'Saved job', severity: 'success' });
+      } catch {
+        const updated = [{ ...job }, ...savedJobs];
+        persistSaved(updated);
+        setNotification({ open: true, message: 'Saved locally (backend unavailable)', severity: 'warning' });
+      }
     }
   };
   
@@ -263,9 +325,14 @@ function JobSearch() {
     setNotification({ ...notification, open: false });
   };
 
-  const sourcePool = (localJobs.length > 0 ? localJobs : jobs);
-  const filteredJobs = activeSource === 'Saved'
-    ? savedJobs
+  const isLoading = searchPerformed ? loading : recLoading;
+  const combinedError = searchPerformed ? error : (error || recError);
+  const sourcePool = !searchPerformed && recommendedJobs.length > 0
+    ? recommendedJobs
+    : (localJobs.length > 0 ? localJobs : jobs);
+  const filteredJobs =
+    activeSource === 'Saved' ? savedJobs
+    : activeSource === 'Recommended' ? recommendedJobs
     : sourcePool.filter((job) => activeSource === 'All' || job.source === activeSource);
 
   const getSourceBadgeSx = (src) => {
@@ -273,6 +340,7 @@ function JobSearch() {
       LinkedIn: { bgcolor: '#0A66C2', color: 'white' },
       Indeed: { bgcolor: '#1346A1', color: 'white' },
       Glassdoor: { bgcolor: '#0CAA41', color: 'white' },
+      Backend: { bgcolor: 'info.main', color: 'white' },
     };
     return { ...(styles[src] || {}), mb: 1 };
   };
@@ -451,7 +519,7 @@ function JobSearch() {
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            {['All','LinkedIn','Indeed','Glassdoor','Saved'].map((src) => (
+            {['All','Recommended','LinkedIn','Indeed','Glassdoor','Saved'].map((src) => (
               <Chip
                 key={src}
                 label={src}
@@ -462,6 +530,10 @@ function JobSearch() {
                   ...(src === 'LinkedIn' && { bgcolor: '#0A66C2', color: 'white' }),
                   ...(src === 'Indeed' && { bgcolor: '#1346A1', color: 'white' }),
                   ...(src === 'Glassdoor' && { bgcolor: '#0CAA41', color: 'white' }),
+                  ...(src === 'Recommended' && {
+                    bgcolor: activeSource === 'Recommended' ? 'info.main' : 'background.paper',
+                    color: activeSource === 'Recommended' ? 'white' : 'text.primary',
+                  }),
                   ...(src === 'Saved' && {
                     bgcolor: activeSource === 'Saved' ? 'secondary.main' : 'background.paper',
                     color: activeSource === 'Saved' ? 'white' : 'text.primary',
@@ -479,9 +551,14 @@ function JobSearch() {
       </Card>
       
       {/* Search Results */}
-      {error && (
+      {combinedError && (
         <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
+          {combinedError}
+        </Alert>
+      )}
+      {!searchPerformed && !isLoading && recommendedJobs.length > 0 && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          Showing recommended vacancies. Use search to refine results.
         </Alert>
       )}
       
@@ -491,7 +568,7 @@ function JobSearch() {
         </Alert>
       )}
       
-      {loading ? (
+      {isLoading ? (
         <Grid container spacing={3}>
           {[1,2,3,4].map((i) => (
             <Grid item xs={12} key={i}>

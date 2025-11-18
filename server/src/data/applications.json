@@ -1,0 +1,7 @@
+[
+  { "id": 1, "date": "2025-11-10T10:00:00Z", "status": "Applied", "source": "LinkedIn" },
+  { "id": 2, "date": "2025-11-11T14:30:00Z", "status": "Under Review", "source": "Indeed" },
+  { "id": 3, "date": "2025-11-11T15:00:00Z", "status": "Interview", "source": "Referral" },
+  { "id": 4, "date": "2025-11-12T09:00:00Z", "status": "Applied", "source": "Company Site" },
+  { "id": 5, "date": "2025-11-12T12:00:00Z", "status": "Interview", "source": "LinkedIn" }
+]

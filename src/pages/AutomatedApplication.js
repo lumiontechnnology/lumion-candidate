@@ -6,7 +6,7 @@ import StopIcon from '@mui/icons-material/Stop';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { jobSearchApi } from '../services/api';
 import submissionService from '../services/submissionService';
-import { getUserPreferences, saveAppliedJob, updateAppliedJobStatus, getAppliedJobs } from '../services/databaseService';
+import { getUserPreferences, saveAppliedJob, updateAppliedJobStatus, getAppliedJobs, saveAppliedJobToBackend, updateAppliedJobStatusBackend } from '../services/databaseService';
 
 function AutomatedApplication() {
   const [isRunning, setIsRunning] = useState(false);
@@ -82,7 +82,11 @@ function AutomatedApplication() {
         appliedDate: res.timestamp || new Date().toISOString(),
         status: 'Applied'
       };
-      saveAppliedJob(appliedJob);
+      try {
+        await saveAppliedJobToBackend(appliedJob);
+      } catch (e) {
+        saveAppliedJob(appliedJob);
+      }
       successCount++;
     }
 
@@ -109,7 +113,11 @@ function AutomatedApplication() {
         failureReason: err.error,
         fixSuggestion: suggestFix(err.error)
       };
-      saveAppliedJob(failedJob);
+      try {
+        await saveAppliedJobToBackend(failedJob);
+      } catch (e) {
+        saveAppliedJob(failedJob);
+      }
     }
     failureCount = (batch.failureCount || (batch.errors || []).length);
     setAppliedSummary({ success: successCount, failure: failureCount });
@@ -129,7 +137,10 @@ function AutomatedApplication() {
       const updates = (applied.slice(0, 6)).sort(() => 0.5 - Math.random()).slice(0, 2);
       updates.forEach((job) => {
         const next = statuses[Math.floor(Math.random() * statuses.length)];
-        updateAppliedJobStatus(job.id, next);
+        // Update backend status with local fallback
+        updateAppliedJobStatusBackend(job.id, { status: next }).catch(() => {
+          updateAppliedJobStatus(job.id, next);
+        });
         addLog(`${job.source}: ${job.title} at ${job.company} → ${next}`);
       });
       setProgress(Math.min(95, 70 + tick * 5));
@@ -215,7 +226,7 @@ function AutomatedApplication() {
             Start Run
           </Button>
           <Button onClick={stopRun} disabled={!isRunning} variant="outlined" color="secondary" startIcon={<StopIcon />}>Stop</Button>
-          <Button href="/application-history" variant="text" startIcon={<VisibilityIcon />}>View History</Button>
+          <Button href="/history" variant="text" startIcon={<VisibilityIcon />}>View History</Button>
         </Box>
 
         <Box sx={{ mt: 3 }}>

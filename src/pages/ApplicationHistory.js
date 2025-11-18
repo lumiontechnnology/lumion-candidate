@@ -25,10 +25,10 @@ import SearchIcon from '@mui/icons-material/Search';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import { getAppliedJobs } from '../services/databaseService';
+import { fetchAppliedJobs } from '../services/databaseService';
 
-// Load applications from local storage persistence
-const loadApplied = () => getAppliedJobs();
+// Backend-first loader with graceful fallback handled in service
+const loadApplied = async () => fetchAppliedJobs();
 
 // Status chip colors
 const statusColors = {
@@ -45,14 +45,23 @@ function ApplicationHistory() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [sourceFilter, setSourceFilter] = useState('All');
-  const [applications, setApplications] = useState(loadApplied());
+  const [applications, setApplications] = useState([]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      // Refresh applied jobs periodically to reflect Run Engine updates
-      setApplications(loadApplied());
-    }, 1500);
-    return () => clearInterval(interval);
+    let mounted = true;
+    const load = async () => {
+      try {
+        const items = await loadApplied();
+        if (mounted) setApplications(items);
+      } catch (e) {
+        // Service handles fallback; ignore
+      }
+    };
+    // Initial load
+    load();
+    // Periodic refresh to reflect automation updates
+    const interval = setInterval(load, 1500);
+    return () => { mounted = false; clearInterval(interval); };
   }, []);
 
   const handleChangePage = (event, newPage) => {
